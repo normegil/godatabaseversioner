@@ -120,44 +120,60 @@ func (v Versioner) Sync(targetVersion int) error {
 	}
 	versionsToApply := v.loadVersionsToApply(upgrade, currentVersion, targetVersion)
 
+	err2 := v.syncAll(versionsToApply, upgrade)
+	if err2 != nil {
+		return err2
+	}
+
+	if err := v.Listener.On(Event{EventEnd, nil, nil}); nil != err {
+		return fmt.Errorf("event %s: %w", EventEnd, err)
+	}
+	return nil
+}
+
+func (v Versioner) syncAll(versionsToApply []Version, upgrade bool) error {
 	if err := v.Listener.On(Event{EventBeforeSync, nil, nil}); nil != err {
 		return fmt.Errorf("event %s: %w", EventBeforeSync, err)
 	}
 	for _, version := range versionsToApply {
-		if err := v.Listener.On(Event{EventBeforeChange, version, nil}); nil != err {
-			return fmt.Errorf("event %s: %w", EventBeforeChange, err)
-		}
-		if upgrade {
-			if err := version.Upgrade(); nil != err {
-				if eventErr := v.Listener.On(Event{EventErrorDuringChange, version, err}); nil != eventErr {
-					return fmt.Errorf("upgrade to version %d (event error: %s): %w", version.Number(), eventErr.Error(), err)
-				}
-				return fmt.Errorf("upgrade to version %d: %w", version.Number(), err)
-			}
-		} else {
-			if err := version.Rollback(); nil != err {
-				if eventErr := v.Listener.On(Event{EventErrorDuringChange, version, err}); nil != eventErr {
-					return fmt.Errorf("rollback to version %d (event error: %s): %w", version.Number(), eventErr.Error(), err)
-				}
-				return fmt.Errorf("rollback to version %d: %w", version.Number(), err)
-			}
-		}
-		if err := v.Applier.SyncVersion(version.Number()); nil != err {
-			if eventErr := v.Listener.On(Event{EventErrorDuringChange, version, err}); nil != eventErr {
-				return fmt.Errorf("sync version to %d (event error: %s): %w", version.Number(), eventErr.Error(), err)
-			}
-			return fmt.Errorf("sync version to %d: %w", version.Number(), err)
-		}
-		if err := v.Listener.On(Event{EventAfterChange, version, nil}); nil != err {
-			return fmt.Errorf("event %s: %w", EventAfterChange, err)
+		err := v.syncVersion(version, upgrade)
+		if err != nil {
+			return err
 		}
 	}
 	if err := v.Listener.On(Event{EventAfterSync, nil, nil}); nil != err {
 		return fmt.Errorf("event %s: %w", EventAfterSync, err)
 	}
+	return nil
+}
 
-	if err := v.Listener.On(Event{EventEnd, nil, nil}); nil != err {
-		return fmt.Errorf("event %s: %w", EventEnd, err)
+func (v Versioner) syncVersion(version Version, upgrade bool) error {
+	if err := v.Listener.On(Event{EventBeforeChange, version, nil}); nil != err {
+		return fmt.Errorf("event %s: %w", EventBeforeChange, err)
+	}
+	if upgrade {
+		if err := version.Upgrade(); nil != err {
+			if eventErr := v.Listener.On(Event{EventErrorDuringChange, version, err}); nil != eventErr {
+				return fmt.Errorf("upgrade to version %d (event error: %s): %w", version.Number(), eventErr.Error(), err)
+			}
+			return fmt.Errorf("upgrade to version %d: %w", version.Number(), err)
+		}
+	} else {
+		if err := version.Rollback(); nil != err {
+			if eventErr := v.Listener.On(Event{EventErrorDuringChange, version, err}); nil != eventErr {
+				return fmt.Errorf("rollback to version %d (event error: %s): %w", version.Number(), eventErr.Error(), err)
+			}
+			return fmt.Errorf("rollback to version %d: %w", version.Number(), err)
+		}
+	}
+	if err := v.Applier.SyncVersion(version.Number()); nil != err {
+		if eventErr := v.Listener.On(Event{EventErrorDuringChange, version, err}); nil != eventErr {
+			return fmt.Errorf("sync version to %d (event error: %s): %w", version.Number(), eventErr.Error(), err)
+		}
+		return fmt.Errorf("sync version to %d: %w", version.Number(), err)
+	}
+	if err := v.Listener.On(Event{EventAfterChange, version, nil}); nil != err {
+		return fmt.Errorf("event %s: %w", EventAfterChange, err)
 	}
 	return nil
 }
