@@ -1,0 +1,72 @@
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - structcheck
+    - varcheck
+    - ineffassign
+    - deadcode
+    - gosec
+    - interfacer
+    - unconvert
+    - dupl
+    - goconst
+    - gocyclo
+    - gocognit
+    - depguard
+    - unparam
+    - prealloc
+    - gochecknoinits
+    - gochecknoglobals
+    - godox
+    - funlen
+    - whitespace
+    - megacheck
+  disable:
+  disable-all: false
+  fast: false
+
+# options for analysis running
+run:
+  # default concurrency is a available CPU number
+  concurrency: 4
+
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 1m
+
+  # exit code when at least one issue was found, default is 1
+  issues-exit-code: 1
+
+  # include test files or not, default is true
+  tests: true
+
+  # default is true. Enables skipping of directories:
+  #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
+  skip-dirs-use-default: true
+
+# output configuration options
+output:
+  # colored-line-number|line-number|json|tab|checkstyle|code-climate, default is "colored-line-number"
+  format: colored-line-number
+
+  # print lines of code with issue, default is true
+  print-issued-lines: true
+
+  # print linter name in the end of issue text, default is true
+  print-linter-name: true
+
+issues:
+  # Independently from option `exclude` we use default exclude patterns,
+  # it can be disabled by this option. To list all
+  # excluded by default patterns execute `golangci-lint run --help`.
+  # Default value for this option is true.
+  exclude-use-default: true
+
+  # Maximum issues count per one linter. Set to 0 to disable. Default is 50.
+  max-issues-per-linter: 0
+
+  # Maximum count of issues with the same text. Set to 0 to disable. Default is 3.
+  max-same-issues: 0

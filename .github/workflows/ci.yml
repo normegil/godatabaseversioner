@@ -1,0 +1,15 @@
+name: "Continuous Integration"
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: "Download linter"
+        run: sh refresh-dev-env.sh
+      - name: "Run linter"
+        run: sh linter.sh

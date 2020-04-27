@@ -1,0 +1,10 @@
+= Go Database Versioner
+
+Go database versionner will help you to manage your database schema versions.
+
+== Documentation
+
+For the documentation, you can check
+
+* https://pkg.go.dev/github.com/normegil/godbversioner[Go.dev]
+* https://pkg.go.dev/github.com/normegil/godbversioner[Godoc]
