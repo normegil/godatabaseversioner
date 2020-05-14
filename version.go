@@ -182,12 +182,12 @@ func (v Versioner) loadVersionsToApply(upgrade bool, currentVersion int, targetV
 	toApply := make([]Version, 0)
 	for _, version := range v.Versions {
 		if upgrade {
-			isBetweenCurrentAndTargetVersions := version.Number() > currentVersion && version.Number() < targetVersion
+			isBetweenCurrentAndTargetVersions := version.Number() > currentVersion && version.Number() <= targetVersion
 			if isBetweenCurrentAndTargetVersions {
 				toApply = append(toApply, version)
 			}
 		} else {
-			isBetweenCurrentAndTargetVersions := version.Number() < currentVersion && version.Number() > targetVersion
+			isBetweenCurrentAndTargetVersions := version.Number() < currentVersion && version.Number() >= targetVersion
 			if isBetweenCurrentAndTargetVersions {
 				toApply = append([]Version{version}, toApply...)
 			}
